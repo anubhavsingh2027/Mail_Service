@@ -21,13 +21,14 @@ You can test the API using **Postman**, **Thunder Client**, or directly from you
 
 ## 🛠️ Tech Stack
 
-| Technology | Purpose |
-|-----------|---------|
-| Node.js | Runtime environment |
-| Express.js | API server framework |
-| Resend API | Email sending service |
-| CORS | Allows cross-origin requests |
-| dotenv | Secure environment variable handling |
+| Technology | Purpose                              |
+| ---------- | ------------------------------------ |
+| Node.js    | Runtime environment                  |
+| Express.js | API server framework                 |
+| Resend API | Email sending service                |
+| RabbitMQ   | Message queue for email jobs         |
+| CORS       | Allows cross-origin requests         |
+| dotenv     | Secure environment variable handling |
 
 ---
 
@@ -38,13 +39,17 @@ Create a `.env` file and add:
 ```env
 RESEND_API_KEY=your_resend_api_key_here
 PORT=3000
+RABBITMQ_URL=amqp://localhost
+MAIL_QUEUE=mail_queue
+```
+
 Get your API Key here → https://resend.com
 
 📦 Installation & Run
-bash
-Copy code
+
+````bash
 # Clone
-git clone <repo-url>
+```git clone <repo-url>
 
 # Install dependencies
 npm install
@@ -53,20 +58,53 @@ npm install
 npm start
 The API will run at:
 
-arduino
-Copy code
+```bash
 http://localhost:3000
-🔥 API Endpoints
-Health Check
-sql
-Copy code
+````
+
+## 🔥 API Endpoints
+
+### Health Check
+
+```http
 GET /
+```
+
 Response:
 
-arduino
-Copy code
-🚀 Server is running and ready to send emails!
-Send Email
-bash
-Copy code
+```json
+{
+  "message": "🚀 Server is running and ready to send emails!"
+}
+```
+
+### Send Email
+
+```http
 POST /sendMail
+Content-Type: application/json
+```
+
+Request body:
+
+```json
+{
+  "to": "recipient@example.com",
+  "websiteName": "My Site",
+  "subject": "Welcome!",
+  "message": "Hello from the RabbitMQ-backed mail API."
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "queued": true,
+  "queue": "mail_queue",
+  "message": "Email request queued for delivery."
+}
+```
+
+This service now enqueues email jobs to RabbitMQ and processes them in the background using the configured queue.
